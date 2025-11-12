@@ -1,0 +1,12 @@
+# Core dependencies for Phase 1
+numpy>=1.20.0
+matplotlib>=3.3.0
+scipy>=1.7.0
+opensimplex>=0.4.0
+
+# Optional: For better performance in future phases
+# pyfastnoisesimd>=0.4.0  # Vectorized noise generation (significant speedup)
+
+# Development dependencies (optional)
+# pytest>=6.0.0  # For unit testing
+# pytest-cov>=2.10.0  # Test coverage
