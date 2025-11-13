@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/synchrophaser/static/css/main.4f4dd382.css",
-    "main.js": "/synchrophaser/static/js/main.cc2e0e4a.js",
+    "main.css": "/synchrophaser/static/css/main.9ca788c1.css",
+    "main.js": "/synchrophaser/static/js/main.2f498514.js",
     "index.html": "/synchrophaser/index.html",
-    "main.4f4dd382.css.map": "/synchrophaser/static/css/main.4f4dd382.css.map",
-    "main.cc2e0e4a.js.map": "/synchrophaser/static/js/main.cc2e0e4a.js.map"
+    "main.9ca788c1.css.map": "/synchrophaser/static/css/main.9ca788c1.css.map",
+    "main.2f498514.js.map": "/synchrophaser/static/js/main.2f498514.js.map"
   },
   "entrypoints": [
-    "static/css/main.4f4dd382.css",
-    "static/js/main.cc2e0e4a.js"
+    "static/css/main.9ca788c1.css",
+    "static/js/main.2f498514.js"
   ]
 }
