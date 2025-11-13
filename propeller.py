@@ -76,6 +76,9 @@ class Propeller:
         self.omega = self.omega_target  # rad/s (start at target speed)
         self.rpm = rpm_nominal
 
+        # Blade position tracking (for synchrophaser)
+        self.blade_angle = 0.0  # radians (0 to 2π), tracks blade #1 position
+
         # Cached values for visualization
         self.rho_local = RHO_SEA_LEVEL  # Current local density
         self.q_aero = 0.0  # Current aerodynamic torque
@@ -163,6 +166,11 @@ class Propeller:
         # Update RPM for convenience
         self.rpm = self.rad_s_to_rpm(self.omega)
 
+        # Update blade angle: θ(t+dt) = θ(t) + ω * dt
+        self.blade_angle += self.omega * dt
+        # Wrap to [0, 2π] to keep angle manageable
+        self.blade_angle = self.blade_angle % (2.0 * np.pi)
+
     def get_state(self) -> dict:
         """
         Get current propeller state for logging/visualization.
@@ -182,6 +190,16 @@ class Propeller:
             'alpha': self.alpha,
             'rpm_error': self.rpm_nominal - self.rpm,
         }
+
+    def set_rpm_target(self, rpm_target: float) -> None:
+        """
+        Set target RPM for governor (used by synchrophaser).
+
+        Args:
+            rpm_target: New target RPM
+        """
+        self.rpm_nominal = rpm_target
+        self.omega_target = self.rpm_to_rad_s(rpm_target)
 
     def __repr__(self):
         return (

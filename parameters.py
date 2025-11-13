@@ -7,8 +7,8 @@ See: "Building a Realistic Propeller Synchrophaser Physics Simulation"
 
 # Atmospheric density parameters (kg/m³)
 RHO_SEA_LEVEL = 1.225  # Standard sea level density
-RHO_MIN_DEFAULT = 1.15  # Lower bound for density variations
-RHO_MAX_DEFAULT = 1.30  # Upper bound for density variations
+RHO_MIN_DEFAULT = 1.08  # Lower bound for density variations (MORE DRAMATIC!)
+RHO_MAX_DEFAULT = 1.37  # Upper bound for density variations (MORE DRAMATIC!)
 
 # Turbulence spatial scales (meters)
 # Based on atmospheric turbulence integral length scales
@@ -58,6 +58,10 @@ COLORMAP = 'RdYlBu_r'  # Red=dense, Blue=light (intuitive for "thick/thin" air)
 PROPELLER_X_DEFAULT = 900.0  # meters (right side of domain)
 PROPELLER_Y_DEFAULT = 0.0    # meters (centerline)
 
+# Twin propeller setup (Phase 3)
+PROPELLER_LEFT_Y = -60.0     # meters (below centerline)
+PROPELLER_RIGHT_Y = +60.0    # meters (above centerline)
+
 # Propeller dynamics
 PROPELLER_INERTIA = 8.0      # kg·m² (rotational inertia)
 PROPELLER_RADIUS = 1.5       # meters (for visualization)
@@ -82,3 +86,33 @@ GOVERNOR_BASE_TORQUE = 900.0  # Base engine torque (Nm) at nominal density
 # Time-series plot parameters
 TIMESERIES_WINDOW = 30.0     # seconds (rolling window duration)
 TIMESERIES_UPDATE_RATE = 10  # Hz (how often to add points to history)
+
+# ============================================================================
+# PHASE 3: SYNCHROPHASER PARAMETERS
+# ============================================================================
+
+# Synchrophaser control (PID controller - Proportional-Integral-Derivative)
+# Now uses TRUE PHASE error from actual blade positions!
+# The synchrophaser minimizes phase difference: φ_error = φ_main - φ_follower
+# Control output adjusts follower's RPM setpoint
+
+# CONSERVATIVE GAINS to prevent overshoot and oscillation
+SYNCHRO_K_P = 1.0            # Proportional gain (was 15.0, too aggressive!)
+SYNCHRO_K_I = 0.1            # Integral gain (was 2.0, too aggressive!)
+SYNCHRO_K_D = 0.5            # Derivative gain (was 3.0, amplifies noise!)
+
+# Integrator anti-windup limits
+SYNCHRO_INTEGRATOR_MIN = -100.0  # RPM
+SYNCHRO_INTEGRATOR_MAX = +100.0  # RPM
+
+# Phase error normalization (radians → RPM correction)
+SYNCHRO_PHASE_SCALE = 30.0   # Scale factor for phase→RPM conversion (reduced from 50)
+
+# Advanced control features to prevent overshoot/oscillation
+SYNCHRO_DERIVATIVE_FILTER_ALPHA = 0.3  # Low-pass filter for derivative (0=no filter, 1=no smoothing) - increased for faster response
+SYNCHRO_DEADBAND = 0.01         # Don't correct errors below this (radians, ~0.6°)
+SYNCHRO_RATE_LIMIT = 20.0       # Max RPM/sec change in correction (prevents jumps) - increased for faster settling (2x original)
+
+# Test mode parameters
+TEST_MODE_DURATION = 60.0    # seconds per test phase (off/on)
+TEST_MODE_SAMPLE_RATE = 10   # Hz (measurement frequency)
