@@ -1,10 +1,4 @@
-[files]
-"./src/density_field.py" = "./src/density_field.py"
-"./src/propeller.py" = "./src/propeller.py"
-"./src/synchrophaser.py" = "./src/synchrophaser.py"
-"./src/pfd_synchrophaser.py" = "./src/pfd_synchrophaser.py"
-"./src/parameters.py" = "./src/parameters.py"
+packages = ["numpy", "opensimplex"]
 
-[packages]
-"numpy" = "*"
-"opensimplex" = "*"
+[[fetch]]
+files = ["./src/density_field.py", "./src/propeller.py", "./src/synchrophaser.py", "./src/pfd_synchrophaser.py", "./src/parameters.py"]
