@@ -469,27 +469,37 @@ class PySimulation:
 
 
 # Initialize when PyScript loads
+print("=== Synchrophaser PLL Simulation Module Loaded ===")
+
 def main():
     """Main entry point with error handling"""
+    print("main() called")
     try:
-        print("Starting Synchrophaser PLL Simulation...")
+        print("Step 1: Creating PySimulation instance...")
         app = PySimulation()
+        print("Step 2: Calling app.init()...")
         app.init()
-        print("Simulation initialized successfully!")
+        print("Step 3: Simulation initialized successfully!")
     except Exception as e:
-        print(f"Error initializing simulation: {e}")
+        import traceback
+        error_msg = traceback.format_exc()
+        print(f"ERROR: {error_msg}")
         # Show error in loading div
         try:
             loading = document.getElementById("loading")
             if loading:
                 loading.innerHTML = f'''
-                    <p style="color: #e94560;">Error loading simulation:</p>
-                    <p style="font-size: 0.8rem; color: #aaa;">{str(e)}</p>
-                    <p style="font-size: 0.8rem; margin-top: 1rem;">Try refreshing the page</p>
+                    <div style="text-align:left; padding:20px;">
+                    <p style="color: #e94560; font-weight:bold;">Error loading simulation:</p>
+                    <pre style="font-size: 0.7rem; color: #aaa; white-space:pre-wrap; margin-top:10px;">{error_msg}</pre>
+                    <p style="font-size: 0.8rem; margin-top: 1rem;">Check browser console (F12) for details</p>
+                    </div>
                 '''
-        except:
-            pass
+        except Exception as e2:
+            print(f"Could not update loading div: {e2}")
         raise
 
 # Run initialization
+print("About to call main()...")
 main()
+print("main() completed")
