@@ -5,5 +5,4 @@ version = "2.0"
 [files]
 "./src/simulation.py" = "simulation.py"
 
-[packages]
-numpy = "*"
+packages = ["numpy"]
