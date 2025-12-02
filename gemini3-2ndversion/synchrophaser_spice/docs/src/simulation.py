@@ -377,13 +377,24 @@ class PySimulation:
     def init(self):
         """Initialize after DOM is ready"""
         # Hide loading, show canvas
-        document.getElementById("loading").style.display = "none"
+        loading_el = document.getElementById("loading")
+        if loading_el:
+            loading_el.style.display = "none"
+
         canvas = document.getElementById("sim-canvas")
+        if not canvas:
+            raise Exception("Canvas element 'sim-canvas' not found")
+
         canvas.style.display = "block"
 
-        # Set canvas size
-        canvas.width = canvas.offsetWidth or 1000
+        # Set canvas size - use fixed size if offsetWidth is 0
+        canvas_width = canvas.offsetWidth
+        if not canvas_width or canvas_width < 100:
+            canvas_width = 1000
+        canvas.width = canvas_width
         canvas.height = 480
+
+        print(f"Canvas initialized: {canvas.width}x{canvas.height}")
 
         self.renderer = CanvasRenderer("sim-canvas")
         self.update_display()
@@ -458,5 +469,27 @@ class PySimulation:
 
 
 # Initialize when PyScript loads
-app = PySimulation()
-app.init()
+def main():
+    """Main entry point with error handling"""
+    try:
+        print("Starting Synchrophaser PLL Simulation...")
+        app = PySimulation()
+        app.init()
+        print("Simulation initialized successfully!")
+    except Exception as e:
+        print(f"Error initializing simulation: {e}")
+        # Show error in loading div
+        try:
+            loading = document.getElementById("loading")
+            if loading:
+                loading.innerHTML = f'''
+                    <p style="color: #e94560;">Error loading simulation:</p>
+                    <p style="font-size: 0.8rem; color: #aaa;">{str(e)}</p>
+                    <p style="font-size: 0.8rem; margin-top: 1rem;">Try refreshing the page</p>
+                '''
+        except:
+            pass
+        raise
+
+# Run initialization
+main()
