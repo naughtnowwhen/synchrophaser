@@ -35,3 +35,19 @@ Thumbs.db
 # Matplotlib cache
 .matplotlib/
 .env
+
+# Large SPICE simulation outputs (GB+ files)
+**/system/synchro_data.txt
+**/system/output.txt
+**/mission_log.txt
+**/*_convergence.gif
+**/*_animation.gif
+
+# Large data files
+**/calib_data.txt
+**/sensor_data.txt
+**/weather_*.txt
+**/pfd_gate_data.txt
+
+# Node modules
+node_modules/

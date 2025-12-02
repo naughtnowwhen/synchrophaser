@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Synchrophaser PLL - Complete Schematic</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a2e;
+            color: #fff;
+        }
+
+        /* Tab Navigation */
+        .tab-nav {
+            display: flex;
+            background: #0f0f1a;
+            border-bottom: 2px solid #3a3a5a;
+            padding: 0 20px;
+        }
+        .tab-btn {
+            padding: 15px 30px;
+            background: transparent;
+            border: none;
+            color: #888;
+            font-size: 16px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        .tab-btn:hover {
+            color: #fff;
+            background: rgba(255,255,255,0.05);
+        }
+        .tab-btn.active {
+            color: #00d4ff;
+            border-bottom-color: #00d4ff;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 20px;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        /* ========== CIRCUIT SCHEMATIC STYLES ========== */
+        .circuit-container {
+            background: #fafafa;
+            border-radius: 8px;
+            padding: 20px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        .circuit-title-block {
+            background: white;
+            border: 2px solid #333;
+            padding: 10px 20px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            border-radius: 4px;
+        }
+        .circuit-title-main {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+        .circuit-title-sub {
+            font-size: 12px;
+            color: #666;
+        }
+        .circuit-title-info {
+            font-size: 12px;
+            text-align: right;
+            color: #666;
+        }
+        .circuit-svg-container {
+            background: white;
+            border: 2px solid #333;
+            border-radius: 4px;
+            overflow: auto;
+        }
+        .circuit-svg-container svg {
+            width: 100%;
+            min-width: 1400px;
+            height: auto;
+        }
+        .wire { stroke: #333; stroke-width: 2; fill: none; }
+        .wire-power { stroke: #c00; stroke-width: 2; fill: none; }
+        .wire-gnd { stroke: #333; stroke-width: 3; fill: none; }
+        .wire-signal { stroke: #00c; stroke-width: 2; fill: none; }
+        .wire-feedback { stroke: #c00; stroke-width: 2; stroke-dasharray: 5,3; fill: none; }
+        .component { stroke: #333; stroke-width: 2; fill: none; }
+        .component-fill { stroke: #333; stroke-width: 2; fill: #fff; }
+        .component-body { stroke: #333; stroke-width: 2; fill: #e8e8e8; }
+        .ic-body { stroke: #333; stroke-width: 2; fill: #d0d0d0; }
+        .label { font-family: 'Courier New', monospace; font-size: 11px; fill: #333; }
+        .label-value { font-family: 'Courier New', monospace; font-size: 10px; fill: #666; }
+        .label-node { font-family: 'Courier New', monospace; font-size: 12px; fill: #00c; font-weight: bold; }
+        .gnd-symbol { stroke: #333; stroke-width: 2; fill: none; }
+        .vcc-symbol { stroke: #c00; stroke-width: 2; fill: #c00; }
+        .section-box { stroke: #999; stroke-width: 1; fill: rgba(200,200,200,0.1); stroke-dasharray: 5,5; }
+        .section-label { font-family: Arial, sans-serif; font-size: 11px; fill: #666; font-weight: bold; }
+        .dot { fill: #333; }
+
+        /* ========== BOM STYLES ========== */
+        .bom-container {
+            background: #0f0f1a;
+            border: 2px solid #3a3a5a;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+        .bom-title {
+            text-align: center;
+            color: #00d4ff;
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+        }
+        .bom-subtitle {
+            text-align: center;
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+        .bom-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+        .block {
+            background: linear-gradient(135deg, #1e1e3a 0%, #2a2a4a 100%);
+            border: 2px solid #4a4a6a;
+            border-radius: 10px;
+            padding: 15px;
+        }
+        .block-title {
+            color: #fff;
+            font-size: 13px;
+            font-weight: bold;
+            text-align: center;
+            padding: 8px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+        }
+        .power-supply .block-title { background: linear-gradient(90deg, #ff6b6b, #ee5a5a); }
+        .signal-cond .block-title { background: linear-gradient(90deg, #4ecdc4, #3db9b0); }
+        .pfd .block-title { background: linear-gradient(90deg, #ffe66d, #f4d35e); color: #333; }
+        .charge-pump .block-title { background: linear-gradient(90deg, #95e1d3, #7dd3c4); color: #333; }
+        .loop-filter .block-title { background: linear-gradient(90deg, #f38181, #e06c6c); }
+        .vco .block-title { background: linear-gradient(90deg, #aa96da, #9980c9); }
+        .motor .block-title { background: linear-gradient(90deg, #6c9bcf, #5a8abf); }
+        .lock-det .block-title { background: linear-gradient(90deg, #a8e6cf, #95d4bd); color: #333; }
+
+        .component-list { list-style: none; }
+        .comp-item {
+            display: flex;
+            align-items: center;
+            padding: 5px 8px;
+            margin: 3px 0;
+            background: rgba(255,255,255,0.05);
+            border-radius: 5px;
+            border-left: 3px solid;
+            font-size: 11px;
+        }
+        .comp-item.resistor { border-color: #ffd93d; }
+        .comp-item.capacitor { border-color: #6bcb77; }
+        .comp-item.diode { border-color: #ff6b6b; }
+        .comp-item.transistor { border-color: #4d96ff; }
+        .comp-item.ic { border-color: #9d65c9; }
+        .comp-item.other { border-color: #888; }
+        .comp-name { color: #fff; font-weight: 500; margin-right: 8px; }
+        .comp-value { color: #aaa; font-size: 10px; }
+
+        .signal-flow-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0,212,255,0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(0,212,255,0.3);
+        }
+        .signal-flow-title {
+            color: #00d4ff;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .signal-flow {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            color: #ccc;
+            font-size: 12px;
+        }
+        .signal-node {
+            background: #2a2a4a;
+            padding: 6px 12px;
+            border-radius: 15px;
+            border: 1px solid #4a4a6a;
+        }
+        .signal-arrow { color: #00d4ff; font-size: 14px; }
+
+        .bom-summary {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+        }
+        .bom-stat {
+            text-align: center;
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+        }
+        .bom-count {
+            font-size: 28px;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+        .bom-label {
+            font-size: 11px;
+            color: #888;
+            margin-top: 4px;
+        }
+        .span-2 { grid-column: span 2; }
+    </style>
+</head>
+<body>
+    <!-- Tab Navigation -->
+    <nav class="tab-nav">
+        <button class="tab-btn active" onclick="showTab('circuit')">Circuit Schematic</button>
+        <button class="tab-btn" onclick="showTab('bom')">Bill of Materials</button>
+    </nav>
+
+    <!-- Circuit Schematic Tab -->
+    <div id="circuit" class="tab-content active">
+        <div class="circuit-container">
+            <div class="circuit-title-block">
+                <div>
+                    <div class="circuit-title-main">SYNCHROPHASER PLL - COMPLETE CIRCUIT SCHEMATIC</div>
+                    <div class="circuit-title-sub">Type-II Charge Pump Phase-Locked Loop for Propeller Synchronization</div>
+                </div>
+                <div class="circuit-title-info">
+                    <div>Rev 2.0</div>
+                    <div>Sheet 1 of 1</div>
+                    <div>42 Components</div>
+                </div>
+            </div>
+
+            <div class="circuit-svg-container">
+                <svg viewBox="0 0 1600 1050" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Background grid -->
+                    <defs>
+                        <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#eee" stroke-width="0.5"/>
+                        </pattern>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#grid)"/>
+
+                    <!-- ========== POWER SUPPLY (7 components) ========== -->
+                    <rect x="20" y="20" width="340" height="200" class="section-box"/>
+                    <text x="30" y="35" class="section-label">POWER SUPPLY (7 components)</text>
+
+                    <!-- VAC Source -->
+                    <circle cx="55" cy="100" r="18" class="component"/>
+                    <path d="M 44 100 Q 55 87 66 100 Q 55 113 44 100" class="component"/>
+                    <text x="55" y="135" class="label" text-anchor="middle">VAC</text>
+                    <text x="55" y="147" class="label-value" text-anchor="middle">120V 60Hz</text>
+
+                    <!-- Bridge Rectifier D1-D4 -->
+                    <rect x="95" y="80" width="50" height="40" class="component-body"/>
+                    <text x="120" y="98" class="label" text-anchor="middle">BRIDGE</text>
+                    <text x="120" y="110" class="label-value" text-anchor="middle">D1-D4</text>
+                    <line x1="73" y1="92" x2="95" y2="92" class="wire"/>
+                    <line x1="73" y1="108" x2="95" y2="108" class="wire"/>
+
+                    <!-- C_filter (1000µF) -->
+                    <line x1="145" y1="100" x2="165" y2="100" class="wire"/>
+                    <line x1="175" y1="70" x2="175" y2="85" class="wire-power"/>
+                    <line x1="170" y1="85" x2="180" y2="85" class="component" stroke-width="3"/>
+                    <path d="M 168 93 Q 175 89 182 93" class="component"/>
+                    <line x1="175" y1="93" x2="175" y2="115" class="wire"/>
+                    <text x="188" y="82" class="label">C_filter</text>
+                    <text x="188" y="94" class="label-value">1000µF</text>
+                    <line x1="175" y1="115" x2="175" y2="125" class="wire"/>
+                    <line x1="167" y1="125" x2="183" y2="125" class="gnd-symbol"/>
+
+                    <!-- C_in (0.33µF) at regulator input -->
+                    <line x1="210" y1="70" x2="210" y2="83" class="wire"/>
+                    <line x1="205" y1="83" x2="215" y2="83" class="component"/>
+                    <line x1="205" y1="88" x2="215" y2="88" class="component"/>
+                    <line x1="210" y1="88" x2="210" y2="100" class="wire"/>
+                    <line x1="205" y1="100" x2="215" y2="100" class="gnd-symbol"/>
+                    <text x="195" y="95" class="label-value" text-anchor="end">C_in</text>
+                    <text x="195" y="105" class="label-value" text-anchor="end">0.33µF</text>
+
+                    <!-- 7805 LDO -->
+                    <rect x="230" y="55" width="60" height="35" class="ic-body"/>
+                    <text x="260" y="77" class="label" text-anchor="middle">7805</text>
+                    <line x1="175" y1="70" x2="230" y2="70" class="wire-power"/>
+                    <text x="260" y="103" class="label-value" text-anchor="middle">U_REG LDO</text>
+
+                    <!-- C_out (0.1µF) at regulator output -->
+                    <line x1="305" y1="70" x2="305" y2="83" class="wire"/>
+                    <line x1="300" y1="83" x2="310" y2="83" class="component"/>
+                    <line x1="300" y1="88" x2="310" y2="88" class="component"/>
+                    <line x1="305" y1="88" x2="305" y2="100" class="wire"/>
+                    <line x1="300" y1="100" x2="310" y2="100" class="gnd-symbol"/>
+                    <text x="318" y="88" class="label-value">C_out</text>
+                    <text x="318" y="100" class="label-value">0.1µF</text>
+
+                    <!-- C_dec (100µF) bulk decoupling -->
+                    <line x1="340" y1="70" x2="340" y2="83" class="wire"/>
+                    <line x1="335" y1="83" x2="345" y2="83" class="component" stroke-width="2"/>
+                    <path d="M 333 91 Q 340 87 347 91" class="component"/>
+                    <line x1="340" y1="91" x2="340" y2="105" class="wire"/>
+                    <line x1="335" y1="105" x2="345" y2="105" class="gnd-symbol"/>
+                    <text x="340" y="120" class="label-value" text-anchor="middle">C_dec</text>
+                    <text x="340" y="132" class="label-value" text-anchor="middle">100µF</text>
+
+                    <!-- +5V Output -->
+                    <line x1="290" y1="70" x2="360" y2="70" class="wire-power"/>
+                    <polygon points="360,65 370,70 360,75" class="vcc-symbol"/>
+                    <text x="365" y="60" class="label" fill="#c00">+5V</text>
+
+                    <!-- ========== SIGNAL CONDITIONING REF (4 components) ========== -->
+                    <rect x="380" y="20" width="260" height="200" class="section-box"/>
+                    <text x="390" y="35" class="section-label">SIGNAL COND REF (4 components)</text>
+
+                    <!-- Sensor (Hall/Optical) -->
+                    <circle cx="415" cy="100" r="16" class="component"/>
+                    <line x1="406" y1="100" x2="424" y2="100" class="component"/>
+                    <line x1="415" y1="91" x2="415" y2="109" class="component"/>
+                    <text x="415" y="130" class="label" text-anchor="middle">SENSOR</text>
+                    <text x="415" y="142" class="label-value" text-anchor="middle">Hall/Optical</text>
+
+                    <!-- R_pullup (10kΩ) -->
+                    <line x1="431" y1="100" x2="455" y2="100" class="wire"/>
+                    <line x1="455" y1="100" x2="455" y2="60" class="wire"/>
+                    <path d="M 455 60 L 455 55 L 450 52 L 460 46 L 450 40 L 460 34 L 455 31 L 455 25" class="component"/>
+                    <line x1="455" y1="25" x2="455" y2="18" class="wire-power"/>
+                    <polygon points="450,18 455,10 460,18" class="vcc-symbol"/>
+                    <text x="468" y="42" class="label">R_pullup</text>
+                    <text x="468" y="54" class="label-value">10kΩ</text>
+
+                    <!-- C_filter (100nF) -->
+                    <line x1="455" y1="100" x2="500" y2="100" class="wire"/>
+                    <circle cx="478" cy="100" r="3" class="dot"/>
+                    <line x1="478" y1="100" x2="478" y2="120" class="wire"/>
+                    <line x1="473" y1="120" x2="483" y2="120" class="component"/>
+                    <line x1="473" y1="125" x2="483" y2="125" class="component"/>
+                    <line x1="478" y1="125" x2="478" y2="142" class="wire"/>
+                    <line x1="473" y1="142" x2="483" y2="142" class="gnd-symbol"/>
+                    <text x="490" y="128" class="label">C_filt</text>
+                    <text x="490" y="140" class="label-value">100nF</text>
+
+                    <!-- U_SCHMITT (74HC14) Schmitt Trigger -->
+                    <line x1="500" y1="100" x2="525" y2="100" class="wire"/>
+                    <polygon points="525,82 525,118 565,100" class="component-fill"/>
+                    <path d="M 535 94 L 543 94 L 543 106 L 551 106" class="component" stroke-width="1"/>
+                    <text x="545" y="132" class="label" text-anchor="middle">U_SCHMITT</text>
+                    <text x="545" y="144" class="label-value" text-anchor="middle">74HC14</text>
+
+                    <!-- REF Output -->
+                    <line x1="565" y1="100" x2="620" y2="100" class="wire-signal"/>
+                    <text x="595" y="92" class="label-node">REF</text>
+
+                    <!-- ========== PHASE DETECTOR (4 components) ========== -->
+                    <rect x="660" y="20" width="200" height="200" class="section-box"/>
+                    <text x="670" y="35" class="section-label">PFD (4 components)</text>
+
+                    <!-- DFF1 -->
+                    <rect x="690" y="55" width="50" height="35" class="ic-body"/>
+                    <text x="715" y="70" class="label" text-anchor="middle">DFF1</text>
+                    <text x="715" y="82" class="label-value" text-anchor="middle">D Flip-Flop</text>
+                    <line x1="620" y1="100" x2="690" y2="72" class="wire-signal"/>
+
+                    <!-- DFF2 -->
+                    <rect x="690" y="125" width="50" height="35" class="ic-body"/>
+                    <text x="715" y="140" class="label" text-anchor="middle">DFF2</text>
+                    <text x="715" y="152" class="label-value" text-anchor="middle">D Flip-Flop</text>
+
+                    <!-- AND Gate -->
+                    <path d="M 760 87 L 760 113 Q 790 100 760 87" class="component-fill"/>
+                    <text x="775" y="120" class="label-value" text-anchor="middle">AND</text>
+                    <line x1="740" y1="72" x2="760" y2="92" class="wire"/>
+                    <line x1="740" y1="143" x2="760" y2="108" class="wire"/>
+
+                    <!-- Delay element (~1ns) -->
+                    <line x1="790" y1="100" x2="810" y2="100" class="wire"/>
+                    <rect x="810" y="90" width="30" height="20" class="component-body"/>
+                    <text x="825" y="103" class="label-value" text-anchor="middle">DLY</text>
+                    <text x="825" y="125" class="label-value" text-anchor="middle">~1ns</text>
+
+                    <!-- Reset feedback lines -->
+                    <line x1="840" y1="100" x2="848" y2="100" class="wire" stroke-dasharray="3,2"/>
+                    <line x1="848" y1="100" x2="848" y2="45" class="wire" stroke-dasharray="3,2"/>
+                    <line x1="848" y1="45" x2="715" y2="45" class="wire" stroke-dasharray="3,2"/>
+                    <line x1="715" y1="45" x2="715" y2="55" class="wire" stroke-dasharray="3,2"/>
+                    <line x1="848" y1="100" x2="848" y2="170" class="wire" stroke-dasharray="3,2"/>
+                    <line x1="848" y1="170" x2="715" y2="170" class="wire" stroke-dasharray="3,2"/>
+                    <line x1="715" y1="170" x2="715" y2="160" class="wire" stroke-dasharray="3,2"/>
+
+                    <!-- UP/DN outputs -->
+                    <line x1="740" y1="63" x2="752" y2="63" class="wire"/>
+                    <line x1="752" y1="63" x2="752" y2="240" class="wire-signal"/>
+                    <text x="745" y="55" class="label-node">UP</text>
+
+                    <line x1="740" y1="152" x2="765" y2="152" class="wire"/>
+                    <line x1="765" y1="152" x2="765" y2="240" class="wire-signal"/>
+                    <text x="758" y="175" class="label-node">DN</text>
+
+                    <!-- ========== CHARGE PUMP (5 components) ========== -->
+                    <rect x="680" y="240" width="200" height="220" class="section-box"/>
+                    <text x="690" y="255" class="section-label">CHARGE PUMP (5 components)</text>
+
+                    <!-- +5V -->
+                    <line x1="780" y1="275" x2="780" y2="265" class="wire-power"/>
+                    <polygon points="775,265 780,255 785,265" class="vcc-symbol"/>
+
+                    <!-- R_set (5kΩ) - bias resistor -->
+                    <path d="M 780 275 L 780 285 L 775 288 L 785 294 L 775 300 L 785 306 L 780 309 L 780 320" class="component"/>
+                    <text x="793" y="295" class="label">R_set</text>
+                    <text x="793" y="307" class="label-value">5kΩ</text>
+
+                    <!-- M1 (PMOS Mirror) -->
+                    <circle cx="780" cy="338" r="14" class="component-fill"/>
+                    <text x="798" y="335" class="label">M1</text>
+                    <text x="798" y="347" class="label-value">PMOS</text>
+
+                    <!-- M2 (PMOS UP Switch) -->
+                    <circle cx="745" cy="375" r="14" class="component-fill"/>
+                    <line x1="752" y1="240" x2="731" y2="370" class="wire-signal"/>
+                    <text x="723" y="375" class="label" text-anchor="end">M2</text>
+                    <text x="723" y="387" class="label-value" text-anchor="end">PMOS</text>
+
+                    <!-- Icp output node -->
+                    <line x1="745" y1="389" x2="745" y2="405" class="wire"/>
+                    <circle cx="745" cy="405" r="3" class="dot"/>
+                    <line x1="745" y1="405" x2="620" y2="405" class="wire"/>
+                    <text x="680" y="398" class="label-node">Icp</text>
+
+                    <!-- M3 (NMOS DN Switch) -->
+                    <circle cx="745" cy="430" r="14" class="component-fill"/>
+                    <line x1="745" y1="405" x2="745" y2="416" class="wire"/>
+                    <line x1="765" y1="240" x2="731" y2="425" class="wire-signal"/>
+                    <text x="723" y="430" class="label" text-anchor="end">M3</text>
+                    <text x="723" y="442" class="label-value" text-anchor="end">NMOS</text>
+
+                    <!-- M4 (NMOS Mirror) -->
+                    <circle cx="780" cy="430" r="14" class="component-fill"/>
+                    <line x1="780" y1="352" x2="780" y2="416" class="wire"/>
+                    <text x="798" y="430" class="label">M4</text>
+                    <text x="798" y="442" class="label-value">NMOS</text>
+
+                    <!-- GND -->
+                    <line x1="745" y1="444" x2="745" y2="450" class="wire"/>
+                    <line x1="780" y1="444" x2="780" y2="450" class="wire"/>
+                    <line x1="745" y1="450" x2="780" y2="450" class="wire"/>
+                    <line x1="762" y1="450" x2="762" y2="460" class="wire"/>
+                    <line x1="754" y1="460" x2="770" y2="460" class="gnd-symbol"/>
+
+                    <!-- ========== LOOP FILTER (4 components) ========== -->
+                    <rect x="400" y="340" width="260" height="160" class="section-box"/>
+                    <text x="410" y="355" class="section-label">LOOP FILTER (4 components)</text>
+
+                    <!-- Rz (680Ω) - damping resistor -->
+                    <line x1="620" y1="405" x2="590" y2="405" class="wire"/>
+                    <path d="M 590 405 L 580 405 L 577 400 L 571 410 L 565 400 L 559 410 L 553 400 L 550 405 L 540 405" class="component"/>
+                    <text x="570" y="393" class="label" text-anchor="middle">Rz</text>
+                    <text x="570" y="425" class="label-value" text-anchor="middle">680Ω 1%</text>
+
+                    <!-- Vctrl node -->
+                    <circle cx="490" cy="405" r="3" class="dot"/>
+                    <line x1="540" y1="405" x2="420" y2="405" class="wire"/>
+                    <text x="460" y="395" class="label-node">Vctrl</text>
+
+                    <!-- C_hf (100nF) - HF bypass -->
+                    <line x1="590" y1="405" x2="590" y2="425" class="wire"/>
+                    <circle cx="590" cy="405" r="3" class="dot"/>
+                    <line x1="585" y1="425" x2="595" y2="425" class="component"/>
+                    <line x1="585" y1="430" x2="595" y2="430" class="component"/>
+                    <line x1="590" y1="430" x2="590" y2="450" class="wire"/>
+                    <text x="602" y="432" class="label">C_hf</text>
+                    <text x="602" y="444" class="label-value">100nF</text>
+                    <line x1="585" y1="450" x2="595" y2="450" class="gnd-symbol"/>
+
+                    <!-- ESR (~1Ω) - parasitic -->
+                    <line x1="490" y1="405" x2="490" y2="418" class="wire"/>
+                    <path d="M 490 418 L 490 422 L 487 425 L 493 429 L 487 433 L 490 436" class="component"/>
+                    <text x="500" y="432" class="label-value">ESR</text>
+                    <text x="500" y="444" class="label-value">~1Ω</text>
+
+                    <!-- Cint (100µF) - main integrating cap -->
+                    <line x1="485" y1="450" x2="495" y2="450" class="component" stroke-width="3"/>
+                    <path d="M 483 458 Q 490 454 497 458" class="component"/>
+                    <line x1="490" y1="458" x2="490" y2="478" class="wire"/>
+                    <text x="500" y="465" class="label">Cint</text>
+                    <text x="500" y="477" class="label-value">100µF</text>
+                    <line x1="485" y1="478" x2="495" y2="478" class="gnd-symbol"/>
+
+                    <!-- ========== VCO (5 components) ========== -->
+                    <rect x="120" y="340" width="260" height="160" class="section-box"/>
+                    <text x="130" y="355" class="section-label">VCO (5 components)</text>
+
+                    <!-- Vctrl input -->
+                    <line x1="420" y1="405" x2="365" y2="405" class="wire"/>
+                    <line x1="365" y1="405" x2="365" y2="420" class="wire"/>
+
+                    <!-- Buffer (voltage follower) -->
+                    <polygon points="347,412 347,428 365,420" class="component-fill"/>
+                    <text x="355" y="445" class="label-value" text-anchor="middle">BUF</text>
+
+                    <!-- Varactor (voltage-controlled capacitance) -->
+                    <line x1="347" y1="420" x2="315" y2="420" class="wire"/>
+                    <path d="M 315 410 L 303 420 L 315 430" class="component"/>
+                    <line x1="303" y1="410" x2="303" y2="430" class="component"/>
+                    <text x="309" y="445" class="label" text-anchor="middle">Varactor</text>
+                    <text x="309" y="457" class="label-value" text-anchor="middle">V-ctrl</text>
+
+                    <!-- R_timing (~80kΩ variable) -->
+                    <line x1="303" y1="420" x2="275" y2="420" class="wire"/>
+                    <path d="M 275 420 L 270 420 L 267 415 L 261 425 L 255 415 L 249 425 L 246 420 L 240 420" class="component"/>
+                    <text x="257" y="408" class="label" text-anchor="middle">R_timing</text>
+                    <text x="257" y="438" class="label-value" text-anchor="middle">~80kΩ var</text>
+
+                    <!-- C_timing (10nF COG) -->
+                    <line x1="240" y1="420" x2="215" y2="420" class="wire"/>
+                    <line x1="215" y1="420" x2="215" y2="438" class="wire"/>
+                    <line x1="210" y1="438" x2="220" y2="438" class="component"/>
+                    <line x1="210" y1="443" x2="220" y2="443" class="component"/>
+                    <line x1="215" y1="443" x2="215" y2="460" class="wire"/>
+                    <text x="228" y="448" class="label">C_timing</text>
+                    <text x="228" y="460" class="label-value">10nF COG</text>
+                    <line x1="210" y1="460" x2="220" y2="460" class="gnd-symbol"/>
+
+                    <!-- OSC core (Kvco=303Hz/V) -->
+                    <rect x="150" y="395" width="50" height="35" class="ic-body"/>
+                    <path d="M 160 412 Q 175 403 190 412 Q 175 421 160 412" class="component" stroke-width="1"/>
+                    <text x="175" y="445" class="label" text-anchor="middle">OSC</text>
+                    <text x="175" y="457" class="label-value" text-anchor="middle">Kvco=303</text>
+                    <line x1="215" y1="420" x2="200" y2="412" class="wire"/>
+
+                    <!-- Fvco output -->
+                    <line x1="150" y1="412" x2="132" y2="412" class="wire"/>
+                    <line x1="132" y1="412" x2="132" y2="530" class="wire-signal"/>
+                    <text x="138" y="470" class="label-node">Fvco</text>
+
+                    <!-- C_dec (100nF) decoupling on OSC -->
+                    <line x1="165" y1="392" x2="165" y2="378" class="wire-power"/>
+                    <polygon points="160,378 165,368 170,378" class="vcc-symbol"/>
+                    <line x1="185" y1="392" x2="185" y2="380" class="wire"/>
+                    <line x1="180" y1="380" x2="190" y2="380" class="component"/>
+                    <line x1="180" y1="375" x2="190" y2="375" class="component"/>
+                    <line x1="185" y1="375" x2="185" y2="365" class="wire"/>
+                    <line x1="180" y1="365" x2="190" y2="365" class="gnd-symbol"/>
+                    <text x="198" y="378" class="label-value">C_dec</text>
+                    <text x="198" y="390" class="label-value">100nF</text>
+
+                    <!-- ========== MOTOR DRIVER (5 components) ========== -->
+                    <rect x="20" y="520" width="370" height="180" class="section-box"/>
+                    <text x="30" y="535" class="section-label">MOTOR DRIVER (5 components)</text>
+
+                    <!-- Fvco input -->
+                    <line x1="132" y1="530" x2="50" y2="560" class="wire-signal"/>
+
+                    <!-- R_f2v (10kΩ) - F/V conversion resistor -->
+                    <line x1="50" y1="560" x2="75" y2="560" class="wire"/>
+                    <path d="M 75 560 L 80 560 L 83 555 L 89 565 L 95 555 L 101 565 L 104 560 L 110 560" class="component"/>
+                    <text x="92" y="548" class="label">R_f2v</text>
+                    <text x="92" y="580" class="label-value" text-anchor="middle">10kΩ</text>
+
+                    <!-- C_f2v (1µF) - F/V conversion capacitor -->
+                    <line x1="110" y1="560" x2="130" y2="560" class="wire"/>
+                    <circle cx="120" cy="560" r="3" class="dot"/>
+                    <line x1="120" y1="560" x2="120" y2="580" class="wire"/>
+                    <line x1="115" y1="580" x2="125" y2="580" class="component"/>
+                    <line x1="115" y1="585" x2="125" y2="585" class="component"/>
+                    <line x1="120" y1="585" x2="120" y2="602" class="wire"/>
+                    <text x="132" y="590" class="label">C_f2v</text>
+                    <text x="132" y="602" class="label-value">1µF</text>
+                    <line x1="115" y1="602" x2="125" y2="602" class="gnd-symbol"/>
+
+                    <!-- H-Bridge (Power MOSFETs) -->
+                    <rect x="150" y="543" width="70" height="45" class="ic-body"/>
+                    <text x="185" y="563" class="label" text-anchor="middle">H-BRIDGE</text>
+                    <text x="185" y="578" class="label-value" text-anchor="middle">PWR MOSFETs</text>
+                    <line x1="130" y1="560" x2="150" y2="565" class="wire"/>
+
+                    <!-- D_flyback (1N4148) - protection diode -->
+                    <line x1="185" y1="543" x2="185" y2="525" class="wire"/>
+                    <polygon points="180,525 185,513 190,525" class="component"/>
+                    <line x1="180" y1="513" x2="190" y2="513" class="component"/>
+                    <text x="198" y="520" class="label">D_flyback</text>
+                    <text x="198" y="532" class="label-value">1N4148</text>
+
+                    <!-- Motor (τ=22ms) -->
+                    <line x1="220" y1="565" x2="250" y2="565" class="wire"/>
+                    <circle cx="280" cy="565" r="25" class="component-fill"/>
+                    <text x="280" y="562" class="label" text-anchor="middle">MOTOR</text>
+                    <text x="280" y="575" class="label-value" text-anchor="middle">τ=22ms</text>
+
+                    <!-- Follower Propeller (mechanical output) -->
+                    <line x1="305" y1="565" x2="335" y2="565" class="wire"/>
+                    <polygon points="335,552 370,565 335,578" class="component-fill" fill="#cfc"/>
+                    <text x="352" y="595" class="label" text-anchor="middle">FOLLOWER</text>
+                    <text x="352" y="607" class="label-value" text-anchor="middle">PROP</text>
+
+                    <!-- ========== FEEDBACK SIGNAL CONDITIONING (4 components) ========== -->
+                    <rect x="410" y="520" width="270" height="180" class="section-box"/>
+                    <text x="420" y="535" class="section-label">SIGNAL COND FB (4 components)</text>
+
+                    <!-- Mechanical coupling from propeller -->
+                    <line x1="370" y1="565" x2="440" y2="565" class="wire-feedback"/>
+                    <text x="405" y="555" class="label-value">mech</text>
+
+                    <!-- FB Sensor (Hall/Optical) -->
+                    <circle cx="470" cy="565" r="16" class="component"/>
+                    <line x1="461" y1="565" x2="479" y2="565" class="component"/>
+                    <line x1="470" y1="556" x2="470" y2="574" class="component"/>
+                    <text x="470" y="595" class="label" text-anchor="middle">SENSOR</text>
+                    <text x="470" y="607" class="label-value" text-anchor="middle">Hall/Optical</text>
+
+                    <!-- R_pullup_fb (10kΩ) -->
+                    <line x1="486" y1="565" x2="515" y2="565" class="wire"/>
+                    <line x1="515" y1="565" x2="515" y2="530" class="wire"/>
+                    <path d="M 515 530 L 515 525 L 510 522 L 520 516 L 510 510 L 520 504 L 515 501 L 515 495" class="component"/>
+                    <line x1="515" y1="495" x2="515" y2="488" class="wire-power"/>
+                    <polygon points="510,488 515,478 520,488" class="vcc-symbol"/>
+                    <text x="528" y="515" class="label">R_pullup_fb</text>
+                    <text x="528" y="527" class="label-value">10kΩ</text>
+
+                    <!-- C_filter_fb (100nF) -->
+                    <circle cx="540" cy="565" r="3" class="dot"/>
+                    <line x1="515" y1="565" x2="565" y2="565" class="wire"/>
+                    <line x1="540" y1="565" x2="540" y2="585" class="wire"/>
+                    <line x1="535" y1="585" x2="545" y2="585" class="component"/>
+                    <line x1="535" y1="590" x2="545" y2="590" class="component"/>
+                    <line x1="540" y1="590" x2="540" y2="610" class="wire"/>
+                    <line x1="535" y1="610" x2="545" y2="610" class="gnd-symbol"/>
+                    <text x="552" y="592" class="label">C_filter_fb</text>
+                    <text x="552" y="604" class="label-value">100nF</text>
+
+                    <!-- Schmitt (74HC14 shared) -->
+                    <polygon points="575,550 575,580 615,565" class="component-fill"/>
+                    <path d="M 585 560 L 593 560 L 593 570 L 601 570" class="component" stroke-width="1"/>
+                    <text x="595" y="595" class="label" text-anchor="middle">Schmitt</text>
+                    <text x="595" y="607" class="label-value" text-anchor="middle">74HC14</text>
+                    <line x1="565" y1="565" x2="575" y2="565" class="wire"/>
+
+                    <!-- FB output back to PFD -->
+                    <line x1="615" y1="565" x2="655" y2="565" class="wire-feedback"/>
+                    <line x1="655" y1="565" x2="655" y2="143" class="wire-feedback"/>
+                    <line x1="655" y1="143" x2="690" y2="143" class="wire-feedback"/>
+                    <text x="638" y="380" class="label-node" transform="rotate(-90, 638, 380)">FB</text>
+
+                    <!-- ========== LOCK DETECTOR (6 components) ========== -->
+                    <rect x="900" y="240" width="280" height="240" class="section-box"/>
+                    <text x="910" y="255" class="section-label">LOCK DETECTOR (6 components)</text>
+
+                    <!-- XOR inputs from PFD -->
+                    <line x1="752" y1="240" x2="930" y2="300" class="wire" stroke-dasharray="4,2"/>
+                    <line x1="765" y1="240" x2="930" y2="320" class="wire" stroke-dasharray="4,2"/>
+
+                    <!-- XOR Gate (74HC86) -->
+                    <path d="M 930 290 Q 940 310 930 330 L 965 310 Z" class="component-fill"/>
+                    <path d="M 925 290 Q 935 310 925 330" class="component"/>
+                    <text x="947" y="345" class="label" text-anchor="middle">XOR</text>
+                    <text x="947" y="357" class="label-value" text-anchor="middle">74HC86</text>
+
+                    <!-- R_lpf (100kΩ) -->
+                    <line x1="965" y1="310" x2="985" y2="310" class="wire"/>
+                    <path d="M 985 310 L 990 310 L 993 305 L 999 315 L 1005 305 L 1011 315 L 1014 310 L 1020 310" class="component"/>
+                    <text x="1002" y="298" class="label" text-anchor="middle">R_lpf</text>
+                    <text x="1002" y="328" class="label-value" text-anchor="middle">100kΩ</text>
+
+                    <!-- C_lpf (1µF) -->
+                    <line x1="1020" y1="310" x2="1050" y2="310" class="wire"/>
+                    <circle cx="1035" cy="310" r="3" class="dot"/>
+                    <line x1="1035" y1="310" x2="1035" y2="332" class="wire"/>
+                    <line x1="1030" y1="332" x2="1040" y2="332" class="component"/>
+                    <line x1="1030" y1="337" x2="1040" y2="337" class="component"/>
+                    <line x1="1035" y1="337" x2="1035" y2="358" class="wire"/>
+                    <line x1="1030" y1="358" x2="1040" y2="358" class="gnd-symbol"/>
+                    <text x="1048" y="340" class="label">C_lpf</text>
+                    <text x="1048" y="352" class="label-value">1µF</text>
+
+                    <!-- Comparator (w/ hysteresis) -->
+                    <polygon points="1060,295 1060,325 1095,310" class="component-fill"/>
+                    <text x="1077" y="338" class="label" text-anchor="middle">COMP</text>
+                    <text x="1077" y="350" class="label-value" text-anchor="middle">hysteresis</text>
+                    <line x1="1050" y1="310" x2="1060" y2="310" class="wire"/>
+
+                    <!-- R_led (330Ω) -->
+                    <line x1="1095" y1="310" x2="1110" y2="310" class="wire"/>
+                    <path d="M 1110 310 L 1115 310 L 1118 305 L 1124 315 L 1130 305 L 1136 315 L 1139 310 L 1145 310" class="component"/>
+                    <text x="1127" y="298" class="label" text-anchor="middle">R_led</text>
+                    <text x="1127" y="328" class="label-value" text-anchor="middle">330Ω</text>
+
+                    <!-- LED (Green 3mm) -->
+                    <line x1="1145" y1="310" x2="1158" y2="310" class="wire"/>
+                    <polygon points="1158,303 1172,310 1158,317" fill="#0c0" stroke="#0a0"/>
+                    <line x1="1172" y1="303" x2="1172" y2="317" stroke="#0a0" stroke-width="2"/>
+                    <text x="1165" y="340" class="label" text-anchor="middle">LED</text>
+                    <text x="1165" y="352" class="label-value" text-anchor="middle">LOCK</text>
+                    <text x="1165" y="364" class="label-value" text-anchor="middle">Green 3mm</text>
+
+                    <!-- Title block -->
+                    <rect x="1150" y="950" width="400" height="80" stroke="#333" stroke-width="2" fill="white"/>
+                    <line x1="1150" y1="980" x2="1550" y2="980" stroke="#333" stroke-width="1"/>
+                    <line x1="1330" y1="950" x2="1330" y2="1030" stroke="#333" stroke-width="1"/>
+                    <text x="1240" y="972" class="label" text-anchor="middle" style="font-size:14px">SYNCHROPHASER PLL</text>
+                    <text x="1240" y="998" class="label-value" text-anchor="middle">Type-II Charge Pump</text>
+                    <text x="1240" y="1015" class="label-value" text-anchor="middle">Phase-Locked Loop</text>
+                    <text x="1440" y="972" class="label" text-anchor="middle" style="font-size:14px">REV 2.0</text>
+                    <text x="1440" y="998" class="label-value" text-anchor="middle">42 Components</text>
+                    <text x="1440" y="1015" class="label-value" text-anchor="middle">Sheet 1/1</text>
+
+                    <!-- Component count summary at bottom -->
+                    <rect x="20" y="720" width="660" height="35" fill="#f5f5f5" stroke="#999"/>
+                    <text x="35" y="742" class="label-value">COMPONENT SUMMARY: 7(PSU) + 4(SigCond) + 4(PFD) + 5(CP) + 4(LF) + 5(VCO) + 5(Motor) + 4(FB) + 6(Lock) = 44 drawn, 42 unique</text>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOM Tab -->
+    <div id="bom" class="tab-content">
+        <div class="bom-container">
+            <div class="bom-title">SYNCHROPHASER PLL - BILL OF MATERIALS</div>
+            <div class="bom-subtitle">Type-II Charge Pump Phase-Locked Loop | Rev 2.0 | 42 Components</div>
+
+            <div class="bom-grid">
+                <!-- Power Supply -->
+                <div class="block power-supply">
+                    <div class="block-title">POWER SUPPLY</div>
+                    <ul class="component-list">
+                        <li class="comp-item other"><span class="comp-name">VAC</span><span class="comp-value">120V RMS, 60Hz</span></li>
+                        <li class="comp-item diode"><span class="comp-name">D1-D4</span><span class="comp-value">Bridge 1N4001</span></li>
+                        <li class="comp-item capacitor"><span class="comp-name">C_filter</span><span class="comp-value">1000µF 25V</span></li>
+                        <li class="comp-item ic"><span class="comp-name">U_REG</span><span class="comp-value">7805 LDO</span></li>
+                        <li class="comp-item capacitor"><span class="comp-name">C_in</span><span class="comp-value">0.33µF</span></li>
+                        <li class="comp-item capacitor"><span class="comp-name">C_out</span><span class="comp-value">0.1µF</span></li>
+                        <li class="comp-item capacitor"><span class="comp-name">C_dec</span><span class="comp-value">100µF</span></li>
+                    </ul>
+                </div>
+
+                <!-- Signal Conditioning REF -->
+                <div class="block signal-cond">
+                    <div class="block-title">SIGNAL COND (REF)</div>
+                    <ul class="component-list">
+                        <li class="comp-item other"><span class="comp-name">Sensor</span><span class="comp-value">Hall/Optical</span></li>
+                        <li class="comp-item resistor"><span class="comp-name">R_pullup</span><span class="comp-value">10kΩ</span></li>
+                        <li class="comp-item capacitor"><span class="comp-name">C_filter</span><span class="comp-value">100nF</span></li>
+                        <li class="comp-item ic"><span class="comp-name">U_SCHMITT</span><span class="comp-value">74HC14</span></li>
+                    </ul>
+                </div>
+
+                <!-- PFD -->
+                <div class="block pfd">
+                    <div class="block-title">PHASE/FREQ DETECTOR</div>
+                    <ul class="component-list">
+                        <li class="comp-item ic"><span class="comp-name">DFF1</span><span class="comp-value">D Flip-Flop</span></li>
+                        <li class="comp-item ic"><span class="comp-name">DFF2</span><span class="comp-value">D Flip-Flop</span></li>
+                        <li class="comp-item ic"><span class="comp-name">AND</span><span class="comp-value">Reset Gate</span></li>
+                        <li class="comp-item other"><span class="comp-name">Delay</span><span class="comp-value">~1ns</span></li>
+                    </ul>
+                </div>
+
+                <!-- Charge Pump -->
+                <div class="block charge-pump">
+                    <div class="block-title">CHARGE PUMP</div>
+                    <ul class="component-list">
+                        <li class="comp-item resistor"><span class="comp-name">R_set</span><span class="comp-value">5kΩ (Icp=1mA)</span></li>
+                        <li class="comp-item transistor"><span class="comp-name">M1</span><span class="comp-value">PMOS Mirror</span></li>
+                        <li class="comp-item transistor"><span class="comp-name">M2</span><span class="comp-value">PMOS UP Sw</span></li>
+                        <li class="comp-item transistor"><span class="comp-name">M3</span><span class="comp-value">NMOS DN Sw</span></li>
+                        <li class="comp-item transistor"><span class="comp-name">M4</span><span class="comp-value">NMOS Mirror</span></li>
+                    </ul>
+                </div>
+
+                <!-- Loop Filter -->
+                <div class="block loop-filter">
+                    <div class="block-title">LOOP FILTER</div>
+                    <ul class="component-list">
+                        <li class="comp-item resistor"><span class="comp-name">Rz</span><span class="comp-value">680Ω 1%</span></li>
+                        <li class="comp-item capacitor"><span class="comp-name">Cint</span><span class="comp-value">100µF Low-ESR</span></li>
+                        <li class="comp-item capacitor"><span class="comp-name">C_hf</span><span class="comp-value">100nF HF Bypass</span></li>
+                        <li class="comp-item resistor"><span class="comp-name">ESR</span><span class="comp-value">~1Ω (parasitic)</span></li>
+                    </ul>
+                </div>
+
+                <!-- VCO -->
+                <div class="block vco">
+                    <div class="block-title">VCO</div>
+                    <ul class="component-list">
+                        <li class="comp-item resistor"><span class="comp-name">R_timing</span><span class="comp-value">~80kΩ var</span></li>
+                        <li class="comp-item capacitor"><span class="comp-name">C_timing</span><span class="comp-value">10nF COG</span></li>
+                        <li class="comp-item diode"><span class="comp-name">Varactor</span><span class="comp-value">Voltage ctrl</span></li>
+                        <li class="comp-item capacitor"><span class="comp-name">C_dec</span><span class="comp-value">100nF</span></li>
+                        <li class="comp-item ic"><span class="comp-name">OSC</span><span class="comp-value">Kvco=303Hz/V</span></li>
+                    </ul>
+                </div>
+
+                <!-- Motor Driver -->
+                <div class="block motor">
+                    <div class="block-title">MOTOR DRIVER</div>
+                    <ul class="component-list">
+                        <li class="comp-item resistor"><span class="comp-name">R_f2v</span><span class="comp-value">10kΩ</span></li>
+                        <li class="comp-item capacitor"><span class="comp-name">C_f2v</span><span class="comp-value">1µF</span></li>
+                        <li class="comp-item ic"><span class="comp-name">H-Bridge</span><span class="comp-value">Power MOSFETs</span></li>
+                        <li class="comp-item diode"><span class="comp-name">D_flyback</span><span class="comp-value">1N4148</span></li>
+                        <li class="comp-item other"><span class="comp-name">Motor</span><span class="comp-value">τ=22ms</span></li>
+                    </ul>
+                </div>
+
+                <!-- Lock Detector -->
+                <div class="block lock-det">
+                    <div class="block-title">LOCK DETECTOR</div>
+                    <ul class="component-list">
+                        <li class="comp-item ic"><span class="comp-name">XOR</span><span class="comp-value">74HC86</span></li>
+                        <li class="comp-item resistor"><span class="comp-name">R_lpf</span><span class="comp-value">100kΩ</span></li>
+                        <li class="comp-item capacitor"><span class="comp-name">C_lpf</span><span class="comp-value">1µF</span></li>
+                        <li class="comp-item ic"><span class="comp-name">Comp</span><span class="comp-value">w/ hysteresis</span></li>
+                        <li class="comp-item resistor"><span class="comp-name">R_led</span><span class="comp-value">330Ω</span></li>
+                        <li class="comp-item diode"><span class="comp-name">LED</span><span class="comp-value">Green 3mm</span></li>
+                    </ul>
+                </div>
+
+                <!-- Signal Conditioning FB (spans 2 columns) -->
+                <div class="block signal-cond span-2">
+                    <div class="block-title">SIGNAL CONDITIONING (FEEDBACK)</div>
+                    <ul class="component-list" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px;">
+                        <li class="comp-item other"><span class="comp-name">Sensor</span><span class="comp-value">Hall/Optical (Follower)</span></li>
+                        <li class="comp-item resistor"><span class="comp-name">R_pullup_fb</span><span class="comp-value">10kΩ</span></li>
+                        <li class="comp-item capacitor"><span class="comp-name">C_filter_fb</span><span class="comp-value">100nF</span></li>
+                        <li class="comp-item ic"><span class="comp-name">Schmitt</span><span class="comp-value">74HC14 (shared)</span></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Signal Flow -->
+            <div class="signal-flow-section">
+                <div class="signal-flow-title">SIGNAL FLOW</div>
+                <div class="signal-flow">
+                    <span class="signal-node">REF Sensor</span>
+                    <span class="signal-arrow">→</span>
+                    <span class="signal-node">Signal Cond</span>
+                    <span class="signal-arrow">→</span>
+                    <span class="signal-node">PFD</span>
+                    <span class="signal-arrow">→</span>
+                    <span class="signal-node">Charge Pump</span>
+                    <span class="signal-arrow">→</span>
+                    <span class="signal-node">Loop Filter</span>
+                    <span class="signal-arrow">→</span>
+                    <span class="signal-node">VCO</span>
+                    <span class="signal-arrow">→</span>
+                    <span class="signal-node">Motor</span>
+                    <span class="signal-arrow">→</span>
+                    <span class="signal-node">Follower Prop</span>
+                    <span class="signal-arrow" style="color: #f66;">⟲</span>
+                    <span class="signal-node" style="border-color: #f66;">FB Sensor</span>
+                    <span class="signal-arrow" style="color: #f66;">→</span>
+                    <span class="signal-node" style="border-color: #f66;">PFD</span>
+                </div>
+            </div>
+
+            <!-- BOM Summary -->
+            <div class="bom-summary">
+                <div class="bom-stat"><div class="bom-count" style="color: #ffd93d;">10</div><div class="bom-label">RESISTORS</div></div>
+                <div class="bom-stat"><div class="bom-count" style="color: #6bcb77;">15</div><div class="bom-label">CAPACITORS</div></div>
+                <div class="bom-stat"><div class="bom-count" style="color: #ff6b6b;">6</div><div class="bom-label">DIODES/LEDs</div></div>
+                <div class="bom-stat"><div class="bom-count" style="color: #4d96ff;">4</div><div class="bom-label">MOSFETs</div></div>
+                <div class="bom-stat"><div class="bom-count" style="color: #9d65c9;">6</div><div class="bom-label">ICs</div></div>
+                <div class="bom-stat"><div class="bom-count" style="color: #00d4ff;">42</div><div class="bom-label">TOTAL</div></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabId) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>
