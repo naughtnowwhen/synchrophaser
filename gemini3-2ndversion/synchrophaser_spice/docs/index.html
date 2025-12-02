@@ -240,6 +240,48 @@
             to { transform: rotate(360deg); }
         }
 
+        /* Progress bar */
+        .progress-container {
+            width: 300px;
+            margin: 1rem 0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-dark);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--highlight), var(--success));
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 4px;
+        }
+
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+            color: var(--text-dim);
+        }
+
+        .load-stage {
+            font-size: 0.85rem;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+
+        .load-details {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            margin-top: 0.3rem;
+        }
+
         /* Schematic iframe */
         #schematic-frame {
             width: 100%;
@@ -397,8 +439,17 @@
                 <div id="canvas-container">
                     <div class="loading" id="loading">
                         <div class="spinner"></div>
-                        <p>Loading PyScript engine...</p>
-                        <p style="font-size: 0.8rem; margin-top: 0.5rem;">This may take a few seconds on first load</p>
+                        <p class="load-stage" id="load-stage">Initializing PyScript...</p>
+                        <div class="progress-container">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progress-fill"></div>
+                            </div>
+                            <div class="progress-text">
+                                <span id="progress-label">Starting...</span>
+                                <span id="progress-percent">0%</span>
+                            </div>
+                        </div>
+                        <p class="load-details" id="load-details">First load downloads ~15MB (Pyodide + NumPy)</p>
                     </div>
                     <canvas id="sim-canvas" style="display: none;"></canvas>
                 </div>
@@ -515,6 +566,60 @@
     </footer>
 
     <script>
+        // Loading progress tracking
+        const loadStages = [
+            { name: 'Initializing PyScript...', detail: 'Setting up runtime environment', pct: 5 },
+            { name: 'Downloading Pyodide...', detail: 'Python interpreter (~10MB)', pct: 15 },
+            { name: 'Loading Python runtime...', detail: 'Initializing WebAssembly', pct: 40 },
+            { name: 'Installing NumPy...', detail: 'Scientific computing library (~5MB)', pct: 60 },
+            { name: 'Loading simulation code...', detail: 'PLL simulation engine', pct: 85 },
+            { name: 'Initializing canvas...', detail: 'Almost ready!', pct: 95 },
+        ];
+
+        let currentStage = 0;
+        let loadStartTime = Date.now();
+
+        function updateProgress(stage, percent, detail) {
+            const fill = document.getElementById('progress-fill');
+            const label = document.getElementById('progress-label');
+            const pctText = document.getElementById('progress-percent');
+            const stageText = document.getElementById('load-stage');
+            const detailText = document.getElementById('load-details');
+
+            if (fill) fill.style.width = percent + '%';
+            if (pctText) pctText.textContent = percent + '%';
+            if (stageText) stageText.textContent = stage;
+            if (label) {
+                const elapsed = ((Date.now() - loadStartTime) / 1000).toFixed(1);
+                label.textContent = elapsed + 's elapsed';
+            }
+            if (detailText && detail) detailText.textContent = detail;
+        }
+
+        // Simulate progress while waiting (will be overridden by actual events)
+        function simulateProgress() {
+            if (currentStage < loadStages.length) {
+                const stage = loadStages[currentStage];
+                updateProgress(stage.name, stage.pct, stage.detail);
+                currentStage++;
+                // Varying delays to simulate real loading
+                const delay = currentStage < 3 ? 800 : 2000;
+                setTimeout(simulateProgress, delay);
+            }
+        }
+
+        // Start simulated progress
+        setTimeout(simulateProgress, 500);
+
+        // Listen for PyScript events
+        document.addEventListener('py:ready', () => {
+            updateProgress('Python ready!', 90, 'Loading simulation module...');
+        });
+
+        document.addEventListener('py:all-done', () => {
+            updateProgress('Complete!', 100, 'Simulation ready');
+        });
+
         // Tab switching
         function showTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
