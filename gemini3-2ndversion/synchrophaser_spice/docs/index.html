@@ -5,11 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Synchrophaser PLL Digital Twin</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚙️</text></svg>">
-
-    <!-- PyScript (legacy stable version) -->
-    <link rel="stylesheet" href="https://pyscript.net/releases/2023.12.1/pyscript.css">
-    <script defer src="https://pyscript.net/releases/2023.12.1/pyscript.js"></script>
-
     <style>
         :root {
             --bg-dark: #1a1a2e;
@@ -19,50 +14,24 @@
             --text: #eee;
             --text-dim: #aaa;
             --success: #00d26a;
-            --warning: #ffc107;
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', system-ui, sans-serif;
             background: var(--bg-dark);
             color: var(--text);
             min-height: 100vh;
         }
-
         header {
             background: linear-gradient(135deg, var(--bg-card), var(--accent));
             padding: 1.5rem 2rem;
             border-bottom: 2px solid var(--highlight);
         }
+        header h1 { font-size: 1.8rem; font-weight: 600; }
+        header p { color: var(--text-dim); margin-top: 0.3rem; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
 
-        header h1 {
-            font-size: 1.8rem;
-            font-weight: 600;
-        }
-
-        header p {
-            color: var(--text-dim);
-            margin-top: 0.3rem;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 1.5rem;
-        }
-
-        .tabs {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
-
+        .tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
         .tab-btn {
             padding: 0.8rem 1.5rem;
             background: var(--bg-card);
@@ -73,16 +42,8 @@
             font-size: 1rem;
             transition: all 0.2s;
         }
-
-        .tab-btn:hover {
-            background: var(--accent);
-        }
-
-        .tab-btn.active {
-            background: var(--highlight);
-            font-weight: 600;
-        }
-
+        .tab-btn:hover { background: var(--accent); }
+        .tab-btn.active { background: var(--highlight); font-weight: 600; }
         .tab-content {
             display: none;
             background: var(--bg-card);
@@ -90,28 +51,11 @@
             padding: 1.5rem;
             min-height: 600px;
         }
+        .tab-content.active { display: block; }
 
-        .tab-content.active {
-            display: block;
-        }
-
-        /* Simulation Panel */
-        .sim-grid {
-            display: grid;
-            grid-template-columns: 300px 1fr;
-            gap: 1.5rem;
-        }
-
-        .controls {
-            background: var(--accent);
-            padding: 1rem;
-            border-radius: 8px;
-        }
-
-        .control-group {
-            margin-bottom: 1.5rem;
-        }
-
+        .sim-grid { display: grid; grid-template-columns: 300px 1fr; gap: 1.5rem; }
+        .controls { background: var(--accent); padding: 1rem; border-radius: 8px; }
+        .control-group { margin-bottom: 1.5rem; }
         .control-group h3 {
             font-size: 0.9rem;
             color: var(--text-dim);
@@ -119,27 +63,20 @@
             text-transform: uppercase;
             letter-spacing: 1px;
         }
-
-        .slider-container {
-            margin: 0.8rem 0;
-        }
-
+        .slider-container { margin: 0.8rem 0; }
         .slider-container label {
             display: flex;
             justify-content: space-between;
             margin-bottom: 0.3rem;
             font-size: 0.9rem;
         }
-
         .slider-container input[type="range"] {
             width: 100%;
             height: 6px;
             -webkit-appearance: none;
             background: var(--bg-dark);
             border-radius: 3px;
-            outline: none;
         }
-
         .slider-container input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             width: 18px;
@@ -148,7 +85,6 @@
             border-radius: 50%;
             cursor: pointer;
         }
-
         button.action-btn {
             width: 100%;
             padding: 0.8rem;
@@ -161,54 +97,21 @@
             cursor: pointer;
             transition: transform 0.1s, opacity 0.2s;
         }
+        button.action-btn:hover { opacity: 0.9; transform: scale(1.02); }
+        button.action-btn:disabled { background: #555; cursor: not-allowed; }
+        button.action-btn.secondary { background: var(--accent); border: 1px solid var(--highlight); }
 
-        button.action-btn:hover {
-            opacity: 0.9;
-            transform: scale(1.02);
-        }
-
-        button.action-btn:disabled {
-            background: #555;
-            cursor: not-allowed;
-        }
-
-        button.action-btn.secondary {
-            background: var(--accent);
-            border: 1px solid var(--highlight);
-        }
-
-        /* Status Display */
-        .status-panel {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-
+        .status-panel { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1rem; }
         .status-card {
             background: var(--accent);
             padding: 1rem;
             border-radius: 8px;
             text-align: center;
         }
+        .status-card .value { font-size: 1.8rem; font-weight: 700; color: var(--highlight); }
+        .status-card .label { font-size: 0.8rem; color: var(--text-dim); margin-top: 0.3rem; }
+        .status-card.locked .value { color: var(--success); }
 
-        .status-card .value {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--highlight);
-        }
-
-        .status-card .label {
-            font-size: 0.8rem;
-            color: var(--text-dim);
-            margin-top: 0.3rem;
-        }
-
-        .status-card.locked .value {
-            color: var(--success);
-        }
-
-        /* Canvas */
         #sim-canvas {
             width: 100%;
             height: 500px;
@@ -217,125 +120,31 @@
             border: 1px solid var(--accent);
         }
 
-        /* Loading indicator */
-        .loading {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 400px;
-            color: var(--text-dim);
-        }
+        #schematic-frame { width: 100%; height: 800px; border: none; border-radius: 8px; }
 
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid var(--accent);
-            border-top-color: var(--highlight);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 1rem;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Progress bar */
-        .progress-container {
-            width: 300px;
-            margin: 1rem 0;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: var(--bg-dark);
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--highlight), var(--success));
-            width: 0%;
-            transition: width 0.3s ease;
-            border-radius: 4px;
-        }
-
-        .progress-text {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.75rem;
-            margin-top: 0.5rem;
-            color: var(--text-dim);
-        }
-
-        .load-stage {
-            font-size: 0.85rem;
-            color: var(--text);
-            margin-bottom: 0.5rem;
-        }
-
-        .load-details {
-            font-size: 0.7rem;
-            color: var(--text-dim);
-            margin-top: 0.3rem;
-        }
-
-        /* Schematic iframe */
-        #schematic-frame {
-            width: 100%;
-            height: 800px;
-            border: none;
-            border-radius: 8px;
-        }
-
-        /* Component info */
         .component-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 1rem;
             margin-top: 1rem;
         }
-
         .component-card {
             background: var(--accent);
             padding: 1rem;
             border-radius: 8px;
             border-left: 3px solid var(--highlight);
         }
+        .component-card h4 { color: var(--highlight); margin-bottom: 0.5rem; }
+        .component-card ul { list-style: none; font-size: 0.9rem; color: var(--text-dim); }
+        .component-card li { padding: 0.2rem 0; }
+        .component-card li::before { content: "• "; color: var(--highlight); }
 
-        .component-card h4 {
-            color: var(--highlight);
-            margin-bottom: 0.5rem;
-        }
+        footer { text-align: center; padding: 1.5rem; color: var(--text-dim); font-size: 0.85rem; }
+        footer a { color: var(--highlight); text-decoration: none; }
 
-        .component-card ul {
-            list-style: none;
-            font-size: 0.9rem;
-            color: var(--text-dim);
-        }
-
-        .component-card li {
-            padding: 0.2rem 0;
-        }
-
-        .component-card li::before {
-            content: "• ";
-            color: var(--highlight);
-        }
-
-        footer {
-            text-align: center;
-            padding: 1.5rem;
-            color: var(--text-dim);
-            font-size: 0.85rem;
-        }
-
-        footer a {
-            color: var(--highlight);
-            text-decoration: none;
+        @media (max-width: 900px) {
+            .sim-grid { grid-template-columns: 1fr; }
+            .status-panel { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
 </head>
@@ -378,82 +187,37 @@
                     <div class="control-group">
                         <h3>Initial Conditions</h3>
                         <div class="slider-container">
-                            <label>
-                                <span>Main RPM</span>
-                                <span id="main-rpm-val">900</span>
-                            </label>
-                            <input type="range" id="main-rpm" min="800" max="1000" value="900"
-                                   oninput="updateSlider('main-rpm')">
+                            <label><span>Main RPM</span><span id="main-rpm-val">900</span></label>
+                            <input type="range" id="main-rpm" min="800" max="1000" value="900" oninput="updateSlider('main-rpm')">
                         </div>
                         <div class="slider-container">
-                            <label>
-                                <span>Follower RPM</span>
-                                <span id="follower-rpm-val">885</span>
-                            </label>
-                            <input type="range" id="follower-rpm" min="800" max="1000" value="885"
-                                   oninput="updateSlider('follower-rpm')">
+                            <label><span>Follower RPM</span><span id="follower-rpm-val">885</span></label>
+                            <input type="range" id="follower-rpm" min="800" max="1000" value="885" oninput="updateSlider('follower-rpm')">
                         </div>
                         <div class="slider-container">
-                            <label>
-                                <span>Phase Offset</span>
-                                <span id="phase-offset-val">45°</span>
-                            </label>
-                            <input type="range" id="phase-offset" min="0" max="180" value="45"
-                                   oninput="updateSlider('phase-offset')">
+                            <label><span>Phase Offset</span><span id="phase-offset-val">45°</span></label>
+                            <input type="range" id="phase-offset" min="0" max="180" value="45" oninput="updateSlider('phase-offset')">
                         </div>
                     </div>
-
                     <div class="control-group">
                         <h3>PLL Parameters</h3>
                         <div class="slider-container">
-                            <label>
-                                <span>Kvco (Hz/V)</span>
-                                <span id="kvco-val">15</span>
-                            </label>
-                            <input type="range" id="kvco" min="5" max="30" value="15"
-                                   oninput="updateSlider('kvco')">
+                            <label><span>Kvco (Hz/V)</span><span id="kvco-val">15</span></label>
+                            <input type="range" id="kvco" min="5" max="30" value="15" oninput="updateSlider('kvco')">
                         </div>
                         <div class="slider-container">
-                            <label>
-                                <span>I_cp (mA)</span>
-                                <span id="icp-val">1.0</span>
-                            </label>
-                            <input type="range" id="icp" min="0.1" max="2" value="1" step="0.1"
-                                   oninput="updateSlider('icp')">
+                            <label><span>I_cp (mA)</span><span id="icp-val">1.0</span></label>
+                            <input type="range" id="icp" min="0.1" max="2" value="1" step="0.1" oninput="updateSlider('icp')">
                         </div>
                     </div>
-
                     <div class="control-group">
                         <h3>Simulation</h3>
-                        <button class="action-btn" id="start-btn" onclick="startSimulation()">
-                            Start Simulation
-                        </button>
-                        <button class="action-btn secondary" onclick="resetSimulation()">
-                            Reset
-                        </button>
-                        <button class="action-btn secondary" onclick="applyDisturbance()">
-                            Apply Disturbance
-                        </button>
+                        <button class="action-btn" id="start-btn" onclick="toggleSimulation()">Start Simulation</button>
+                        <button class="action-btn secondary" onclick="resetSimulation()">Reset</button>
+                        <button class="action-btn secondary" onclick="applyDisturbance()">Apply Disturbance</button>
                     </div>
                 </div>
-
-                <div id="canvas-container">
-                    <div class="loading" id="loading">
-                        <div class="spinner"></div>
-                        <p class="load-stage" id="load-stage">Initializing PyScript...</p>
-                        <div class="progress-container">
-                            <div class="progress-bar">
-                                <div class="progress-fill" id="progress-fill"></div>
-                            </div>
-                            <div class="progress-text">
-                                <span id="progress-label">Starting...</span>
-                                <span id="progress-percent">0%</span>
-                            </div>
-                        </div>
-                        <p class="load-details" id="load-details">First load downloads ~15MB (Pyodide + NumPy)</p>
-                    </div>
-                    <canvas id="sim-canvas" style="display: none;"></canvas>
-                </div>
+                <canvas id="sim-canvas"></canvas>
             </div>
         </div>
 
@@ -561,140 +325,400 @@
 
     <footer>
         <p>Synchrophaser PLL Digital Twin |
-           <a href="https://github.com/petermurphy" target="_blank">GitHub</a> |
-           Built with PyScript
+           <a href="https://github.com/naughtnowwhen/synchrophaser" target="_blank">GitHub</a> |
+           Pure JavaScript Implementation
         </p>
     </footer>
 
     <script>
-        // Loading progress tracking
-        const loadStages = [
-            { name: 'Initializing PyScript...', detail: 'Setting up runtime environment', pct: 5 },
-            { name: 'Downloading Pyodide...', detail: 'Python interpreter (~10MB)', pct: 15 },
-            { name: 'Loading Python runtime...', detail: 'Initializing WebAssembly', pct: 40 },
-            { name: 'Installing NumPy...', detail: 'Scientific computing library (~5MB)', pct: 60 },
-            { name: 'Loading simulation code...', detail: 'PLL simulation engine', pct: 85 },
-            { name: 'Initializing canvas...', detail: 'Almost ready!', pct: 95 },
-        ];
+    // =============================================================================
+    // PLL SIMULATION ENGINE (Pure JavaScript)
+    // =============================================================================
 
-        let currentStage = 0;
-        let loadStartTime = Date.now();
+    const PLL = {
+        // Component values from 42-component schematic
+        V_SUPPLY: 5.0,
+        R_SET: 5000,
+        RZ: 680,
+        CINT: 100e-6,
+        TAU_MOTOR: 0.022,
+        NUM_BLADES: 3,
+        LOCK_THRESHOLD: 2.0,
 
-        function updateProgress(stage, percent, detail) {
-            const fill = document.getElementById('progress-fill');
-            const label = document.getElementById('progress-label');
-            const pctText = document.getElementById('progress-percent');
-            const stageText = document.getElementById('load-stage');
-            const detailText = document.getElementById('load-details');
+        // State
+        dt: 0.002,
+        running: false,
+        animationId: null,
 
-            if (fill) fill.style.width = percent + '%';
-            if (pctText) pctText.textContent = percent + '%';
-            if (stageText) stageText.textContent = stage;
-            if (label) {
-                const elapsed = ((Date.now() - loadStartTime) / 1000).toFixed(1);
-                label.textContent = elapsed + 's elapsed';
-            }
-            if (detailText && detail) detailText.textContent = detail;
-        }
+        // Simulation state
+        refRpm: 900,
+        phaseRef: 0,
+        phaseFb: 0,
+        vCtrl: 2.5,
+        vInt: 0,
+        fVco: 44.25,
+        rpmFollower: 885,
+        isLocked: false,
 
-        // Simulate progress while waiting (will be overridden by actual events)
-        function simulateProgress() {
-            if (currentStage < loadStages.length) {
-                const stage = loadStages[currentStage];
-                updateProgress(stage.name, stage.pct, stage.detail);
-                currentStage++;
-                // Varying delays - longer for NumPy loading
-                const delay = currentStage < 3 ? 1000 : 3000;
-                setTimeout(simulateProgress, delay);
+        // Parameters (can be adjusted)
+        kVco: 15,
+        iCp: 0.001,
+
+        // History for plots
+        historyLen: 200,
+        phaseErrHistory: [],
+        rpmHistory: [],
+        vCtrlHistory: [],
+
+        reset() {
+            this.refRpm = parseFloat(document.getElementById('main-rpm').value);
+            this.rpmFollower = parseFloat(document.getElementById('follower-rpm').value);
+            const phaseOffset = parseFloat(document.getElementById('phase-offset').value);
+            this.kVco = parseFloat(document.getElementById('kvco').value);
+            this.iCp = parseFloat(document.getElementById('icp').value) / 1000;
+
+            this.phaseRef = 0;
+            this.phaseFb = phaseOffset * Math.PI / 180;
+            this.vCtrl = this.V_SUPPLY / 2;
+            this.vInt = 0;
+            this.fVco = this.rpmFollower / 60 * this.NUM_BLADES;
+            this.isLocked = false;
+
+            this.phaseErrHistory = [];
+            this.rpmHistory = [];
+            this.vCtrlHistory = [];
+        },
+
+        step() {
+            const fRef = this.refRpm / 60 * this.NUM_BLADES;
+
+            // Phase accumulation
+            this.phaseRef += 2 * Math.PI * fRef * this.dt;
+            this.phaseFb += 2 * Math.PI * this.fVco * this.dt;
+
+            // PFD: Phase error
+            let phaseErr = (this.phaseRef - this.phaseFb) % (2 * Math.PI);
+            if (phaseErr > Math.PI) phaseErr -= 2 * Math.PI;
+            if (phaseErr < -Math.PI) phaseErr += 2 * Math.PI;
+            const phaseErrDeg = phaseErr * 180 / Math.PI;
+
+            // Charge pump current
+            let dutyUp = 0, dutyDn = 0;
+            if (phaseErr > 0) {
+                dutyUp = Math.min(Math.abs(phaseErr) / Math.PI, 1.0);
             } else {
-                // Keep updating elapsed time while waiting
-                setInterval(() => {
-                    const elapsed = ((Date.now() - loadStartTime) / 1000).toFixed(1);
-                    document.getElementById('progress-label').textContent = elapsed + 's elapsed';
-                    // Check if canvas is now visible (means Python loaded)
-                    const canvas = document.getElementById('sim-canvas');
-                    if (canvas && canvas.style.display === 'block') {
-                        updateProgress('Complete!', 100, 'Simulation ready');
-                    }
-                }, 500);
+                dutyDn = Math.min(Math.abs(phaseErr) / Math.PI, 1.0);
             }
-        }
+            const iPump = this.iCp * (dutyUp - dutyDn);
 
-        // Start simulated progress
-        setTimeout(simulateProgress, 500);
+            // Loop filter
+            const vProp = iPump * this.RZ;
+            this.vInt += iPump * this.dt / this.CINT;
+            this.vInt = Math.max(-this.V_SUPPLY/2, Math.min(this.V_SUPPLY/2, this.vInt));
 
-        // Also check periodically if pySimulation became available
-        const checkReady = setInterval(() => {
-            if (window.pySimulation) {
-                console.log('pySimulation is now available!');
-                updateProgress('Complete!', 100, 'Simulation ready');
-                clearInterval(checkReady);
+            this.vCtrl = this.V_SUPPLY / 2 + vProp + this.vInt;
+            this.vCtrl = Math.max(0.5, Math.min(this.V_SUPPLY - 0.5, this.vCtrl));
+
+            // VCO
+            this.fVco = fRef + this.kVco * (this.vCtrl - this.V_SUPPLY / 2);
+
+            // Motor dynamics
+            const targetRpm = this.fVco / this.NUM_BLADES * 60;
+            const alpha = 1 - Math.exp(-this.dt / this.TAU_MOTOR);
+            this.rpmFollower += (targetRpm - this.rpmFollower) * alpha;
+            this.fVco = this.rpmFollower / 60 * this.NUM_BLADES;
+
+            // Lock detector
+            this.isLocked = Math.abs(phaseErrDeg) < this.LOCK_THRESHOLD;
+
+            // Update history
+            this.phaseErrHistory.push(phaseErrDeg);
+            this.rpmHistory.push(this.rpmFollower);
+            this.vCtrlHistory.push(this.vCtrl);
+
+            if (this.phaseErrHistory.length > this.historyLen) {
+                this.phaseErrHistory.shift();
+                this.rpmHistory.shift();
+                this.vCtrlHistory.shift();
             }
-        }, 1000);
 
-        // Listen for PyScript events (2023 version uses different events)
-        document.addEventListener('py:ready', () => {
-            console.log('PyScript event: py:ready');
-            updateProgress('Python ready!', 90, 'Loading simulation module...');
-        });
+            return phaseErrDeg;
+        },
 
-        document.addEventListener('py:all-done', () => {
-            console.log('PyScript event: py:all-done');
-            updateProgress('Complete!', 100, 'Simulation ready');
-        });
-
-        // Also listen for pyscript-ready (older event name)
-        window.addEventListener('pyscript-ready', () => {
-            console.log('PyScript event: pyscript-ready (legacy)');
-            updateProgress('Python ready!', 92, 'Initializing...');
-        });
-
-        // Tab switching
-        function showTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            event.target.classList.add('active');
+        disturb() {
+            this.rpmFollower += (Math.random() > 0.5 ? 30 : -30);
+            this.phaseFb += (Math.random() - 0.5) * Math.PI;
         }
+    };
 
-        // Slider updates
-        function updateSlider(id) {
-            const slider = document.getElementById(id);
-            const valSpan = document.getElementById(id + '-val');
-            let val = slider.value;
+    // =============================================================================
+    // CANVAS RENDERER
+    // =============================================================================
 
-            if (id === 'phase-offset') val += '°';
-            else if (id === 'icp') val = parseFloat(val).toFixed(1);
+    const Renderer = {
+        canvas: null,
+        ctx: null,
 
-            valSpan.textContent = val;
-        }
+        init() {
+            this.canvas = document.getElementById('sim-canvas');
+            this.ctx = this.canvas.getContext('2d');
+            this.resize();
+            window.addEventListener('resize', () => this.resize());
+        },
 
-        // Simulation controls (will be connected to PyScript)
-        function startSimulation() {
-            if (window.pySimulation) {
-                window.pySimulation.start();
+        resize() {
+            const container = this.canvas.parentElement;
+            this.canvas.width = container.offsetWidth || 800;
+            this.canvas.height = 500;
+        },
+
+        clear() {
+            this.ctx.fillStyle = '#1a1a2e';
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        },
+
+        drawPropeller(cx, cy, phase, color, label) {
+            const ctx = this.ctx;
+            const radius = 60;
+
+            // Hub
+            ctx.beginPath();
+            ctx.arc(cx, cy, 15, 0, 2 * Math.PI);
+            ctx.fillStyle = '#333';
+            ctx.fill();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // 3 blades
+            for (let i = 0; i < 3; i++) {
+                const angle = phase + i * 2 * Math.PI / 3;
+                const x1 = cx + 15 * Math.cos(angle);
+                const y1 = cy + 15 * Math.sin(angle);
+                const x2 = cx + radius * Math.cos(angle);
+                const y2 = cy + radius * Math.sin(angle);
+
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 12;
+                ctx.lineCap = 'round';
+                ctx.stroke();
             }
+
+            // Label
+            ctx.fillStyle = '#eee';
+            ctx.font = '14px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(label, cx, cy + 90);
+        },
+
+        drawPhaseArc(cx, cy) {
+            const ctx = this.ctx;
+            let phaseErr = (PLL.phaseRef - PLL.phaseFb) % (2 * Math.PI);
+            if (phaseErr > Math.PI) phaseErr -= 2 * Math.PI;
+
+            ctx.beginPath();
+            const start = -Math.PI / 2;
+            const end = start + phaseErr;
+            ctx.arc(cx, cy, 30, Math.min(start, end), Math.max(start, end));
+            ctx.strokeStyle = Math.abs(phaseErr) > 0.035 ? '#e94560' : '#00d26a';
+            ctx.lineWidth = 4;
+            ctx.stroke();
+
+            ctx.fillStyle = '#eee';
+            ctx.font = '12px sans-serif';
+            ctx.textAlign = 'center';
+            const errDeg = phaseErr * 180 / Math.PI;
+            ctx.fillText(`Δφ = ${errDeg.toFixed(1)}°`, cx, cy + 50);
+        },
+
+        drawPlot(x, y, w, h, data, yMin, yMax, color, label, reference = null) {
+            const ctx = this.ctx;
+
+            // Background
+            ctx.fillStyle = '#16213e';
+            ctx.fillRect(x, y, w, h);
+            ctx.strokeStyle = '#0f3460';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(x, y, w, h);
+
+            // Reference line
+            if (reference !== null) {
+                const refY = y + h - (reference - yMin) / (yMax - yMin) * h;
+                ctx.beginPath();
+                ctx.setLineDash([5, 5]);
+                ctx.moveTo(x, refY);
+                ctx.lineTo(x + w, refY);
+                ctx.strokeStyle = '#666';
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            // Zero line
+            if (yMin < 0 && yMax > 0) {
+                const zeroY = y + h - (0 - yMin) / (yMax - yMin) * h;
+                ctx.beginPath();
+                ctx.moveTo(x, zeroY);
+                ctx.lineTo(x + w, zeroY);
+                ctx.strokeStyle = '#444';
+                ctx.stroke();
+            }
+
+            // Data
+            if (data.length > 1) {
+                ctx.beginPath();
+                for (let i = 0; i < data.length; i++) {
+                    const px = x + (i / data.length) * w;
+                    let py = y + h - (data[i] - yMin) / (yMax - yMin) * h;
+                    py = Math.max(y, Math.min(y + h, py));
+                    if (i === 0) ctx.moveTo(px, py);
+                    else ctx.lineTo(px, py);
+                }
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+
+            // Label
+            ctx.fillStyle = '#aaa';
+            ctx.font = '12px sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText(label, x + 5, y + 15);
+        },
+
+        drawLockIndicator(cx, cy) {
+            const ctx = this.ctx;
+
+            ctx.beginPath();
+            ctx.arc(cx, cy, 20, 0, 2 * Math.PI);
+
+            if (PLL.isLocked) {
+                ctx.fillStyle = '#00d26a';
+                ctx.shadowColor = '#00d26a';
+                ctx.shadowBlur = 20;
+            } else {
+                ctx.fillStyle = '#333';
+                ctx.shadowBlur = 0;
+            }
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            ctx.fillStyle = '#eee';
+            ctx.font = 'bold 14px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(PLL.isLocked ? 'LOCKED' : 'UNLOCKED', cx, cy + 40);
+        },
+
+        render() {
+            this.clear();
+
+            // Propellers
+            this.drawPropeller(150, 200, PLL.phaseRef, '#4CAF50', 'MAIN');
+            const followerColor = PLL.isLocked ? '#00d26a' : '#e94560';
+            this.drawPropeller(350, 200, PLL.phaseFb, followerColor, 'FOLLOWER');
+            this.drawPhaseArc(250, 200);
+            this.drawLockIndicator(250, 320);
+
+            // Plots
+            const plotX = 500;
+            const plotW = this.canvas.width - plotX - 50;
+            const plotH = 120;
+
+            this.drawPlot(plotX, 30, plotW, plotH, PLL.phaseErrHistory, -180, 180, '#e94560', 'Phase Error (°)');
+            this.drawPlot(plotX, 180, plotW, plotH, PLL.rpmHistory, 850, 950, '#4CAF50', 'Follower RPM', PLL.refRpm);
+            this.drawPlot(plotX, 330, plotW, plotH, PLL.vCtrlHistory, 0, 5, '#2196F3', 'Vctrl (V)');
+        }
+    };
+
+    // =============================================================================
+    // UI CONTROLS
+    // =============================================================================
+
+    function showTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        event.target.classList.add('active');
+    }
+
+    function updateSlider(id) {
+        const slider = document.getElementById(id);
+        const valSpan = document.getElementById(id + '-val');
+        let val = slider.value;
+        if (id === 'phase-offset') val += '°';
+        else if (id === 'icp') val = parseFloat(val).toFixed(1);
+        valSpan.textContent = val;
+    }
+
+    function updateDisplay() {
+        document.getElementById('rpm-main').textContent = PLL.refRpm.toFixed(0);
+        document.getElementById('rpm-follower').textContent = PLL.rpmFollower.toFixed(0);
+
+        if (PLL.phaseErrHistory.length > 0) {
+            const err = PLL.phaseErrHistory[PLL.phaseErrHistory.length - 1];
+            document.getElementById('phase-error').textContent = err.toFixed(1) + '°';
         }
 
-        function resetSimulation() {
-            if (window.pySimulation) {
-                window.pySimulation.reset();
-            }
+        const lockCard = document.getElementById('lock-status');
+        if (PLL.isLocked) {
+            lockCard.classList.add('locked');
+            lockCard.querySelector('.value').textContent = 'LOCKED';
+        } else {
+            lockCard.classList.remove('locked');
+            lockCard.querySelector('.value').textContent = 'UNLOCKED';
+        }
+    }
+
+    function simulationLoop() {
+        if (!PLL.running) return;
+
+        // Run multiple steps per frame for speed
+        for (let i = 0; i < 5; i++) {
+            PLL.step();
         }
 
-        function applyDisturbance() {
-            if (window.pySimulation) {
-                window.pySimulation.disturb();
-            }
+        updateDisplay();
+        Renderer.render();
+
+        PLL.animationId = requestAnimationFrame(simulationLoop);
+    }
+
+    function toggleSimulation() {
+        const btn = document.getElementById('start-btn');
+        if (PLL.running) {
+            PLL.running = false;
+            cancelAnimationFrame(PLL.animationId);
+            btn.textContent = 'Start Simulation';
+        } else {
+            PLL.running = true;
+            btn.textContent = 'Stop Simulation';
+            simulationLoop();
         }
+    }
+
+    function resetSimulation() {
+        PLL.running = false;
+        cancelAnimationFrame(PLL.animationId);
+        document.getElementById('start-btn').textContent = 'Start Simulation';
+        PLL.reset();
+        updateDisplay();
+        Renderer.render();
+    }
+
+    function applyDisturbance() {
+        PLL.disturb();
+    }
+
+    // Initialize on load
+    window.addEventListener('load', () => {
+        Renderer.init();
+        PLL.reset();
+        updateDisplay();
+        Renderer.render();
+        console.log('Synchrophaser PLL Simulation loaded (Pure JS)');
+    });
     </script>
-
-    <!-- PyScript Configuration (2023 format) -->
-    <py-config>
-packages = ["numpy"]
-    </py-config>
-
-    <!-- PyScript Simulation -->
-    <py-script src="./src/simulation.py"></py-script>
 </body>
 </html>
