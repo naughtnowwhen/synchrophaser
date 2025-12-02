@@ -660,7 +660,14 @@
         }
     </script>
 
+    <!-- PyScript Configuration -->
+    <py-config type="json">
+    {
+        "packages": ["numpy"]
+    }
+    </py-config>
+
     <!-- PyScript Simulation -->
-    <script type="py" src="./src/simulation.py" config="./pyscript.toml"></script>
+    <script type="py" src="./src/simulation.py"></script>
 </body>
 </html>
