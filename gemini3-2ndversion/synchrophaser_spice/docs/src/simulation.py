@@ -7,8 +7,12 @@ Renders to HTML5 Canvas for real-time visualization.
 """
 
 import numpy as np
-from js import document, window, setInterval, clearInterval
+from js import document, window, setInterval, clearInterval, console
 from pyodide.ffi import create_proxy
+
+# Use JS console for visible logging
+def log(msg):
+    console.log(f"[PY] {msg}")
 
 # =============================================================================
 # PLL COMPONENT PARAMETERS (matching schematic)
@@ -376,33 +380,44 @@ class PySimulation:
 
     def init(self):
         """Initialize after DOM is ready"""
+        log("init() - Starting initialization...")
+
         # Hide loading, show canvas
+        log("init() - Getting loading element...")
         loading_el = document.getElementById("loading")
         if loading_el:
+            log("init() - Hiding loading element")
             loading_el.style.display = "none"
 
+        log("init() - Getting canvas element...")
         canvas = document.getElementById("sim-canvas")
         if not canvas:
             raise Exception("Canvas element 'sim-canvas' not found")
 
+        log("init() - Showing canvas...")
         canvas.style.display = "block"
 
         # Set canvas size - use fixed size if offsetWidth is 0
         canvas_width = canvas.offsetWidth
+        log(f"init() - Canvas offsetWidth: {canvas_width}")
         if not canvas_width or canvas_width < 100:
             canvas_width = 1000
         canvas.width = canvas_width
         canvas.height = 480
 
-        print(f"Canvas initialized: {canvas.width}x{canvas.height}")
+        log(f"init() - Canvas size set to: {canvas.width}x{canvas.height}")
 
+        log("init() - Creating renderer...")
         self.renderer = CanvasRenderer("sim-canvas")
+
+        log("init() - Calling update_display...")
         self.update_display()
 
         # Make available to JavaScript
+        log("init() - Exposing to window.pySimulation...")
         window.pySimulation = create_proxy(self)
 
-        print("Synchrophaser PLL Simulation loaded!")
+        log("init() - Complete! Simulation ready.")
 
     def start(self):
         """Start the simulation loop"""
@@ -469,21 +484,22 @@ class PySimulation:
 
 
 # Initialize when PyScript loads
-print("=== Synchrophaser PLL Simulation Module Loaded ===")
+log("=== Synchrophaser PLL Simulation Module Loaded ===")
 
 def main():
     """Main entry point with error handling"""
-    print("main() called")
+    log("main() called")
     try:
-        print("Step 1: Creating PySimulation instance...")
+        log("Step 1: Creating PySimulation instance...")
         app = PySimulation()
-        print("Step 2: Calling app.init()...")
+        log("Step 2: Calling app.init()...")
         app.init()
-        print("Step 3: Simulation initialized successfully!")
+        log("Step 3: Simulation initialized successfully!")
     except Exception as e:
         import traceback
         error_msg = traceback.format_exc()
-        print(f"ERROR: {error_msg}")
+        log(f"ERROR: {error_msg}")
+        console.error(error_msg)
         # Show error in loading div
         try:
             loading = document.getElementById("loading")
@@ -496,10 +512,10 @@ def main():
                     </div>
                 '''
         except Exception as e2:
-            print(f"Could not update loading div: {e2}")
+            log(f"Could not update loading div: {e2}")
         raise
 
 # Run initialization
-print("About to call main()...")
+log("About to call main()...")
 main()
-print("main() completed")
+log("main() completed")

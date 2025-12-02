@@ -612,13 +612,21 @@
         // Start simulated progress
         setTimeout(simulateProgress, 500);
 
-        // Listen for PyScript events
+        // Listen for PyScript events (2023 version uses different events)
         document.addEventListener('py:ready', () => {
+            console.log('PyScript event: py:ready');
             updateProgress('Python ready!', 90, 'Loading simulation module...');
         });
 
         document.addEventListener('py:all-done', () => {
+            console.log('PyScript event: py:all-done');
             updateProgress('Complete!', 100, 'Simulation ready');
+        });
+
+        // Also listen for pyscript-ready (older event name)
+        window.addEventListener('pyscript-ready', () => {
+            console.log('PyScript event: pyscript-ready (legacy)');
+            updateProgress('Python ready!', 92, 'Initializing...');
         });
 
         // Tab switching
