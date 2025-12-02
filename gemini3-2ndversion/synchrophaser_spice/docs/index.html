@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Synchrophaser PLL Digital Twin</title>
 
-    <!-- PyScript -->
-    <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
-    <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
+    <!-- PyScript (legacy stable version) -->
+    <link rel="stylesheet" href="https://pyscript.net/releases/2023.12.1/pyscript.css">
+    <script defer src="https://pyscript.net/releases/2023.12.1/pyscript.js"></script>
 
     <style>
         :root {
@@ -660,7 +660,12 @@
         }
     </script>
 
-    <!-- PyScript Simulation with inline config -->
-    <script type="py" config='{"packages":["numpy"]}' src="./src/simulation.py"></script>
+    <!-- PyScript Configuration (2023 format) -->
+    <py-config>
+packages = ["numpy"]
+    </py-config>
+
+    <!-- PyScript Simulation -->
+    <py-script src="./src/simulation.py"></py-script>
 </body>
 </html>
