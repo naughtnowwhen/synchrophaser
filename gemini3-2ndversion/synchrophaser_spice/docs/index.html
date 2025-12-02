@@ -603,14 +603,34 @@
                 const stage = loadStages[currentStage];
                 updateProgress(stage.name, stage.pct, stage.detail);
                 currentStage++;
-                // Varying delays to simulate real loading
-                const delay = currentStage < 3 ? 800 : 2000;
+                // Varying delays - longer for NumPy loading
+                const delay = currentStage < 3 ? 1000 : 3000;
                 setTimeout(simulateProgress, delay);
+            } else {
+                // Keep updating elapsed time while waiting
+                setInterval(() => {
+                    const elapsed = ((Date.now() - loadStartTime) / 1000).toFixed(1);
+                    document.getElementById('progress-label').textContent = elapsed + 's elapsed';
+                    // Check if canvas is now visible (means Python loaded)
+                    const canvas = document.getElementById('sim-canvas');
+                    if (canvas && canvas.style.display === 'block') {
+                        updateProgress('Complete!', 100, 'Simulation ready');
+                    }
+                }, 500);
             }
         }
 
         // Start simulated progress
         setTimeout(simulateProgress, 500);
+
+        // Also check periodically if pySimulation became available
+        const checkReady = setInterval(() => {
+            if (window.pySimulation) {
+                console.log('pySimulation is now available!');
+                updateProgress('Complete!', 100, 'Simulation ready');
+                clearInterval(checkReady);
+            }
+        }, 1000);
 
         // Listen for PyScript events (2023 version uses different events)
         document.addEventListener('py:ready', () => {
